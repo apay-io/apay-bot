@@ -2,7 +2,7 @@ import { Networks } from 'stellar-sdk';
 import * as fs from 'fs';
 
 export default () => ({
-  markets: fs.readFileSync('../../markets.json'),
+  markets: JSON.parse(fs.readFileSync('./markets.json').toString()),
   stellar: {
     horizonUrl: process.env.STELLAR_HORIZON_URL || 'https://horizon-testnet.stellar.org',
     networkPassphrase: process.env.STELLAR_NETWORK_PASSPHRASE || Networks.TESTNET,
