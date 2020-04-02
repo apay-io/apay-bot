@@ -16,11 +16,6 @@ import { StellarService } from './stellar.service';
       useFactory: (config: ConfigService) => {
         return {
           redis: config.get('redis'),
-          limiter: {
-            max: 1,
-            duration: 20000,
-            bounceBack: false,
-          },
         };
       },
       imports: [ConfigService],
