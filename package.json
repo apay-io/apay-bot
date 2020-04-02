@@ -20,17 +20,24 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs/bull": "^0.1.0",
     "@nestjs/common": "^6.7.2",
+    "@nestjs/config": "latest",
     "@nestjs/core": "^6.7.2",
     "@nestjs/platform-express": "^6.7.2",
+    "bignumber.js": "latest",
+    "bull": "^3.13.0",
+    "lodash": "latest",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.0",
-    "rxjs": "^6.5.3"
+    "rxjs": "^6.5.3",
+    "stellar-sdk": "latest"
   },
   "devDependencies": {
     "@nestjs/cli": "^6.9.0",
     "@nestjs/schematics": "^6.7.0",
     "@nestjs/testing": "^6.7.1",
+    "@types/bull": "^3.12.1",
     "@types/express": "^4.17.1",
     "@types/jest": "^24.0.18",
     "@types/node": "^12.7.5",
