@@ -63,4 +63,44 @@ export class StellarService {
         return offer;
       });
   }
+
+  streamEffects(account, action) {
+    const builder = this.server
+      .effects()
+      .cursor('now') // not interested in old events
+      .forAccount(account);
+
+    builder.stream({
+      onmessage: action,
+      onerror: err => this.logger.error(err),
+    });
+  }
+
+  streamPayments(account, action) {
+    const builder = this.server
+      .payments()
+      .join('transactions')
+      // .cursor('now') // not interested in old events
+      .forAccount(account);
+
+    builder.stream({
+      onmessage: action,
+      onerror: err => this.logger.error(err),
+    });
+  }
+
+  async getTx(txId: string) {
+    return this.server
+      .operations()
+      .join('transactions')
+      .operation(txId)
+      .call();
+  }
+
+  async assignChannelAndSequence(manager) {
+    return {
+      channel: manager,
+      sequence: await this.server.loadAccount(manager).sequence,
+    }
+  }
 }

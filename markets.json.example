@@ -1,11 +1,13 @@
 [
   {
     "account": "GDO2OU2OLMAVOLYIUUD3S62FKQ43FRK6QZ4EOGAG6AUE4JXRHD5P5R7K",
+    "manager": "GAPAYW2AWTEMWIUOJTYKEBADAS2YKFIWLZJFKIWCDLQPSRY3KYQEC5MM",
     "base": { "asset_type": "native" },
     "asset": { "asset_type": "credit_alphanum4", "asset_code": "SLT", "asset_issuer": "GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP" },
   },
   {
     "account": "GBSRGTCKYYEC3AHTCVQ26V4QQETLJEJD7F2PANV6WDPJXV47FBAAJ5TZ",
+    "manager": "GAPAYW2AWTEMWIUOJTYKEBADAS2YKFIWLZJFKIWCDLQPSRY3KYQEC5MM",
     "base": { "asset_type": "native" },
     "asset": { "asset_type": "credit_alphanum4", "asset_code": "KIN", "asset_issuer": "GBDEVU63Y6NTHJQQZIKVTC23NWLQVP3WJ2RI2OTSJTNYOIGICST6DUXR" },
   }

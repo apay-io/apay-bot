@@ -25,13 +25,16 @@
     "@nestjs/config": "latest",
     "@nestjs/core": "^6.7.2",
     "@nestjs/platform-express": "^6.7.2",
+    "@nestjs/typeorm": "latest",
     "bignumber.js": "latest",
     "bull": "^3.13.0",
     "lodash": "latest",
+    "pg": "^8.0.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.0",
     "rxjs": "^6.5.3",
-    "stellar-sdk": "latest"
+    "stellar-sdk": "latest",
+    "typeorm": "latest"
   },
   "devDependencies": {
     "@nestjs/cli": "^6.9.0",

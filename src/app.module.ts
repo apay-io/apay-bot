@@ -7,6 +7,10 @@ import { Producer } from './producer.service';
 import { BullModule } from '@nestjs/bull';
 import { EventsProcessor } from './events.processor';
 import { StellarService } from './stellar.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Tx } from './tx.entity';
+import { Account } from './account.entity';
+import { Charge } from './charge.entity';
 
 @Module({
   imports: [
@@ -24,7 +28,11 @@ import { StellarService } from './stellar.service';
       isGlobal: true,
       load: [configuration],
     }),
-
+    TypeOrmModule.forRootAsync({
+      useFactory: (config: ConfigService) => config.get('database'),
+      inject: [ConfigService],
+    }),
+    TypeOrmModule.forFeature([Account, Charge, Tx]),
   ],
   controllers: [AppController],
   providers: [AppService, Producer, EventsProcessor, StellarService],

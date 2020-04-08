@@ -21,21 +21,6 @@ export class Producer {
     this.networkPassphrase = this.configService.get('stellar.networkPassphrase');
   }
 
-  async streamEffects(market: {account: string, base: AssetInterface, asset: AssetInterface}) {
-    await this.enqueue(market);
-
-    const builder = this.horizon
-      .effects()
-      .cursor('now') // not interested in old events
-      .forAccount(market.account);
-
-    builder.stream({
-      onmessage: async (effect) => {
-        this.enqueue(market);
-      },
-    });
-  }
-
   async enqueue(market) {
     let delay = 0;
     // manually limiting number of new jobs
