@@ -97,16 +97,13 @@ export class EventsProcessor {
       const existing = find(offers, (item) => {
         return isEqual(this.stellarService.assetFromObject(newOffer.buying), this.stellarService.assetFromObject(item.buying))
           && isEqual(this.stellarService.assetFromObject(newOffer.selling), this.stellarService.assetFromObject(item.selling))
-          && newOffer.price.minus(item.price).abs().dividedBy(newOffer.price).lt(0.001);
+          && newOffer.price.minus(item.price).abs().dividedBy(newOffer.price).lt(0.001)
+          && newOffer.amount.minus(item.amount).abs().dividedBy(newOffer.amount).lt(0.05);
       });
       if (!existing) {
         offersToSend.push(newOffer);
       } else {
-        if (new BigNumber(existing.amount).lt(newOffer.amount)) {
-          offersToSend.push(newOffer);
-        } else {
-          offersToSave.push(existing.id);
-        }
+        offersToSave.push(existing.id);
       }
     }
     for (const offer of offers) {
