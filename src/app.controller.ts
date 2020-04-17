@@ -27,6 +27,11 @@ export class AppController {
     private readonly stellarService: StellarService,
   ) {}
 
+  @Get('/')
+  hello() {
+    return 'Hello world';
+  }
+
   @Post('/account')
   async account(@Body() params: { account: string, memo?: string }): Promise<Account> {
     return await this.accountRepo.findOne({
@@ -75,6 +80,7 @@ export class AppController {
     if (!find(loadedAccount.balances, market.asset)) {
       throw new BadRequestException('No trustline');
     }
+    // todo: check for APAY___ trustline
 
     if (baseSum.isZero() || assetSum.isZero()) {
       throw new BadRequestException('Insufficient txs');
@@ -167,6 +173,11 @@ export class AppController {
     const account = await this.accountRepo.findOne(tx.memo);
     if (!tx.memo || !account) {
       throw new NotFoundException('Invalid tx');
+    }
+
+    const loadedAccount = await this.stellarService.loadAccount(account.account);
+    if (!find(loadedAccount.balances, market.asset) || !find(loadedAccount.balances, market.base)) {
+      throw new BadRequestException('No trustline');
     }
 
     const {unitPriceBase, unitPriceAsset} = await this.calculateUnitPrices(market);

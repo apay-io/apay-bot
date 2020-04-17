@@ -1,0 +1,11 @@
+dist
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.gitignore
+.git
+markets.json
+config/*
+.idea
+*.env

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apay-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apay-bot
+  template:
+    metadata:
+      labels:
+        app: apay-bot
+    spec:
+      containers:
+        - name: apay-bot
+          image: umbrel/apay-bot:latest
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: apay-bot-secrets
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: apay-bot-config-volume
+              mountPath: /usr/src/app/config
+          readinessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 5
+      volumes:
+        - name: apay-bot-config-volume
+          configMap:
+            name: apay-bot-config
+            items:
+            - key: markets.json
+              path: markets.json
+            - key: postgres.crt
+              path: postgres.crt

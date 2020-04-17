@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: apay-bot-svc
+spec:
+  type: LoadBalancer  
+  selector:
+    app: apay-bot
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 3000

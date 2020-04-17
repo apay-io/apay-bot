@@ -101,6 +101,42 @@ export class StellarService {
     return {
       channel: manager,
       sequence: await this.server.loadAccount(manager).sequence,
+    };
+  }
+
+  async init(market) {
+    if (!market.manager) {
+      return;
+    }
+    try {
+      const loadedAccount = await this.server.loadAccount(market.account);
+      return;
+    } catch (err) {
+      await this.buildAndSubmitTx([
+        Operation.createAccount({
+          destination: market.account,
+          startingBalance: '150',
+        }),
+        Operation.changeTrust({
+          asset: this.assetFromObject(market.base),
+          source: market.account,
+        }),
+        Operation.changeTrust({
+          asset: this.assetFromObject(market.asset),
+          source: market.account,
+        }),
+        Operation.changeTrust({
+          asset: this.assetFromObject(market.base),
+        }),
+        Operation.changeTrust({
+          asset: this.assetFromObject(market.asset),
+        }),
+      ], {
+        source: market.manager,
+        signers: [
+          market.account,
+        ],
+      });
     }
   }
 }

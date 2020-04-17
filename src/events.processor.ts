@@ -7,10 +7,11 @@ import { Job, Queue } from 'bull';
 import { AssetInterface } from './asset.interface';
 import { StellarService } from './stellar.service';
 import { Operation } from 'stellar-sdk';
+import { CompactLogger } from './compact-logger';
 
 @Processor('events')
 export class EventsProcessor {
-  private readonly logger = new Logger(EventsProcessor.name);
+  private readonly logger = new CompactLogger(EventsProcessor.name);
 
   constructor(
     private readonly configService: ConfigService,
@@ -21,31 +22,36 @@ export class EventsProcessor {
 
   @Process()
   async process(job: Job<{ account: string, base: AssetInterface, asset: AssetInterface}>) {
-    this.logger.debug(job.data, 'job');
+    this.logger.start(`${job.data.base.asset_code}/${job.data.asset.asset_code}`);
     const account = job.data.account;
     const offers = await this.stellarService.loadOffers(account);
-    this.logger.debug(offers, 'existing offers');
+    this.logger
+      .start('existing-offers')
+      .logList(offers, (o) => `${o.id} selling ${o.amount} ${o.selling.asset_code} at ${o.price} ${o.buying.asset_code}/${o.selling.asset_code}`)
+      .end();
 
     const acc = await this.stellarService.loadAccount(account);
-    this.logger.debug(acc);
     const baseBalance = find(acc.balances, job.data.base);
     const assetBalance = find(acc.balances, job.data.asset);
-    this.logger.log(baseBalance.balance, baseBalance.asset_code || 'XLM');
-    this.logger.log(assetBalance.balance, assetBalance.asset_code);
+    this.logger.start('account')
+      .log(`${baseBalance.balance} ${baseBalance.asset_code || 'XLM'}`)
+      .log(`${assetBalance.balance} ${assetBalance.asset_code || 'XLM'}`).end();
 
     if (baseBalance && assetBalance) {
       const medianPrice = new BigNumber(baseBalance.balance).dividedBy(assetBalance.balance);
-      this.logger.log(medianPrice.toNumber(), 'median price');
-      this.logger.log(new BigNumber(baseBalance.balance).plus(medianPrice.multipliedBy(assetBalance.balance)).toFixed(7), 'total value');
+      this.logger.start('median-price').log(`${medianPrice.toNumber()} ${baseBalance.asset_code || 'XLM'}/${assetBalance.asset_code || 'XLM'}`).end();
+      this.logger.start('total-value').log(
+        new BigNumber(baseBalance.balance).plus(medianPrice.multipliedBy(assetBalance.balance)).toFixed(7) + ' ' + baseBalance.asset_code || 'XLM'
+      ).end();
 
       const newOffers = this.generateOffers(medianPrice, baseBalance, assetBalance,
         [1.002, 1.004, 1.006, 1.008, 1.01, 1.015, 1.02, 1.2],
       );
-      this.logger.debug(newOffers, 'target offers');
+      this.logger.start('target-offers').logList(newOffers, (o) => `selling ${o.amount.toFixed(7)} ${o.selling.asset_code} at ${o.price.toFixed(7)} ${o.buying.asset_code}/${o.selling.asset_code}`).end();
 
       const { offersToSend, offersToDelete } = this.filterExistingOffers(newOffers, offers);
-      this.logger.debug(offersToSend, 'offers to send');
-      this.logger.debug(offersToDelete, 'offers to delete');
+      this.logger.start('offers-to-send').logList(offersToSend, (o) => `${o.id} selling ${o.amount.toFixed(7)} ${o.selling.asset_code} at ${o.price.toFixed(7)} ${o.buying.asset_code}/${o.selling.asset_code}`).end();
+      this.logger.start('offers-to-delete').logList(offersToDelete, (o) => `${o.id} selling ${o.amount} ${o.selling.asset_code} at ${o.price} ${o.buying.asset_code}/${o.selling.asset_code}`).end();
 
       if (offersToSend.length > 0 || offersToDelete.length > 0) {
         try {
@@ -71,14 +77,16 @@ export class EventsProcessor {
             source: account,
           });
         } catch (err) {
+          // console.error(err);
           this.logger.error(err);
-          this.logger.log(err.response.data);
+          this.logger.end();
           throw err;
         }
       } else {
         this.logger.log('no changes');
       }
     }
+    this.logger.end();
   }
 
   private filterExistingOffers(newOffers: any[], offers: any[]) {
@@ -94,6 +102,10 @@ export class EventsProcessor {
       if (!existing) {
         offersToSend.push(newOffer);
       } else {
+        if (new BigNumber(existing.amount).lt(newOffer.amount)) {
+          newOffer.id = existing.id;
+          offersToSend.push(newOffer);
+        }
         offersToSave.push(existing.id);
       }
     }
