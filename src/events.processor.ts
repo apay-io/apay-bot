@@ -22,12 +22,12 @@ export class EventsProcessor {
 
   @Process()
   async process(job: Job<{ account: string, base: AssetInterface, asset: AssetInterface}>) {
-    this.logger.start(`${job.data.base.asset_code}/${job.data.asset.asset_code}`);
+    this.logger.start(`${job.data.base.asset_code || 'XLM'}/${job.data.asset.asset_code || 'XLM'}`);
     const account = job.data.account;
     const offers = await this.stellarService.loadOffers(account);
     this.logger
       .start('existing-offers')
-      .logList(offers, (o) => `${o.id} selling ${o.amount} ${o.selling.asset_code} at ${o.price} ${o.buying.asset_code}/${o.selling.asset_code}`)
+      .logList(offers, (o) => `${o.id} selling ${o.amount} ${o.selling.asset_code || 'XLM'} at ${o.price} ${o.buying.asset_code || 'XLM'}/${o.selling.asset_code || 'XLM'}`)
       .end();
 
     const acc = await this.stellarService.loadAccount(account);
@@ -47,11 +47,11 @@ export class EventsProcessor {
       const newOffers = this.generateOffers(medianPrice, baseBalance, assetBalance,
         [1.002, 1.004, 1.006, 1.008, 1.01, 1.015, 1.02, 1.2],
       );
-      this.logger.start('target-offers').logList(newOffers, (o) => `selling ${o.amount.toFixed(7)} ${o.selling.asset_code} at ${o.price.toFixed(7)} ${o.buying.asset_code}/${o.selling.asset_code}`).end();
+      this.logger.start('target-offers').logList(newOffers, (o) => `selling ${o.amount.toFixed(7)} ${o.selling.asset_code || 'XLM'} at ${o.price.toFixed(7)} ${o.buying.asset_code || 'XLM'}/${o.selling.asset_code || 'XLM'}`).end();
 
       const { offersToSend, offersToDelete } = this.filterExistingOffers(newOffers, offers);
-      this.logger.start('offers-to-send').logList(offersToSend, (o) => `${o.id} selling ${o.amount.toFixed(7)} ${o.selling.asset_code} at ${o.price.toFixed(7)} ${o.buying.asset_code}/${o.selling.asset_code}`).end();
-      this.logger.start('offers-to-delete').logList(offersToDelete, (o) => `${o.id} selling ${o.amount} ${o.selling.asset_code} at ${o.price} ${o.buying.asset_code}/${o.selling.asset_code}`).end();
+      this.logger.start('offers-to-send').logList(offersToSend, (o) => `${o.id} selling ${o.amount.toFixed(7)} ${o.selling.asset_code || 'XLM'} at ${o.price.toFixed(7)} ${o.buying.asset_code || 'XLM'}/${o.selling.asset_code || 'XLM'}`).end();
+      this.logger.start('offers-to-delete').logList(offersToDelete, (o) => `${o.id} selling ${o.amount} ${o.selling.asset_code || 'XLM'} at ${o.price} ${o.buying.asset_code || 'XLM'}/${o.selling.asset_code || 'XLM'}`).end();
 
       if (offersToSend.length > 0 || offersToDelete.length > 0) {
         try {
@@ -103,10 +103,10 @@ export class EventsProcessor {
         offersToSend.push(newOffer);
       } else {
         if (new BigNumber(existing.amount).lt(newOffer.amount)) {
-          newOffer.id = existing.id;
           offersToSend.push(newOffer);
+        } else {
+          offersToSave.push(existing.id);
         }
-        offersToSave.push(existing.id);
       }
     }
     for (const offer of offers) {
