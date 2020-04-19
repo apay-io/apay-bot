@@ -26,8 +26,8 @@ export class Tx {
 
   @Column({
     type: 'decimal',
-    precision: 18,
-    scale: 12,
+    precision: 30,
+    scale: 18,
     transformer: new BigNumberToStringTransformer(),
     nullable: false,
   })
