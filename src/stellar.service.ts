@@ -20,13 +20,13 @@ export class StellarService {
     operations: xdr.Operation[] = [],
     { source, memo = null, timeout = 30, sequence = null, signers = []},
   ) {
-    const fee = await this.server.feeStats();
+    // const fee = await this.server.feeStats();
 
     const builder = new TransactionBuilder(
       sequence
         ? new Account(source, sequence)
         : await this.server.loadAccount(source), {
-      fee: fee.fee_charged.mode,
+      fee: 100, // fee.fee_charged.mode,
       networkPassphrase: this.networkPassphrase,
     });
     if (timeout) {
@@ -71,7 +71,7 @@ export class StellarService {
       .forAccount(account);
 
     builder.stream({
-      onmessage: action,
+      onmessage: effect => this.logger.log(effect),
       onerror: err => this.logger.error(err),
     });
   }
