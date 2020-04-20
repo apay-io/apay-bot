@@ -71,7 +71,7 @@ export class StellarService {
       .forAccount(account);
 
     builder.stream({
-      onmessage: effect => this.logger.log(effect),
+      onmessage: action,
       onerror: err => this.logger.error(err),
     });
   }
