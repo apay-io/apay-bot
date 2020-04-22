@@ -151,7 +151,7 @@ export class AppController {
       })] : []),
       Operation.payment({
         destination: account.account,
-        asset: new Asset(`APAY${market.asset.asset_code}`, market.manager),
+        asset: new Asset(`APAY${market.asset.asset_code || 'XLM'}`, market.manager),
         amount: minUnits,
       }),
     ], {
@@ -166,7 +166,7 @@ export class AppController {
   async withdraw(@Body() params: { txId: string }): Promise<any> {
     const op = await this.stellarService.getTx(params.txId);
     const market = find(this.configService.get('markets'), { manager: op.to });
-    if (op.asset_code !== `APAY${market.asset.asset_code}`) {
+    if (op.asset_code !== `APAY${market.asset.asset_code || 'XLM'}`) {
       throw new BadRequestException('Invalid asset');
     }
     const tx = await op.transaction();
@@ -185,7 +185,7 @@ export class AppController {
 
     const charge = await this.chargeRepo.save({
       account,
-      asset: market.asset.asset_code,
+      asset: market.asset.asset_code || 'XLM',
       tokens: new BigNumber(op.amount).negated(),
       baseAmount: new BigNumber(unitPriceBase.multipliedBy(op.amount).toFixed(7)).negated(),
       assetAmount: new BigNumber(unitPriceAsset.multipliedBy(op.amount).toFixed(7)).negated(),
@@ -222,7 +222,7 @@ export class AppController {
     this.logger.log(assetBalance, 'asset balance');
 
     const totalIssued = await this.chargeRepo.createQueryBuilder()
-      .where('Charge.asset = :asset', {asset: market.asset.asset_code})
+      .where('Charge.asset = :asset', {asset: market.asset.asset_code || 'XLM'})
       .select('SUM(tokens)')
       .getRawOne();
     this.logger.log(totalIssued, 'total issued');
