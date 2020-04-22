@@ -27,7 +27,7 @@ spec:
           readinessProbe:
             tcpSocket:
               port: 3000
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
       volumes:
         - name: apay-bot-config-volume
           configMap:

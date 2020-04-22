@@ -110,7 +110,7 @@ export class AppController {
       }));
       await this.chargeRepo.save({
         account,
-        asset: market.asset.asset_code,
+        asset: market.asset.asset_code || 'XLM',
         tokens: new BigNumber(minUnits),
         baseAmount: new BigNumber(depositBase),
         assetAmount: new BigNumber(depositAsset),

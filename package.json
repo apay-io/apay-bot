@@ -33,7 +33,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.0",
     "rxjs": "^6.5.3",
-    "stellar-sdk": "latest",
+    "stellar-sdk": "4.1.0",
     "typeorm": "latest"
   },
   "devDependencies": {
