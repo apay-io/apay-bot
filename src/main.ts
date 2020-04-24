@@ -18,9 +18,9 @@ async function bootstrap() {
   const markets = configService.get('markets');
   for (const market of markets) {
     await producer.enqueue(market);
-    stellarService.streamEffects(market.account, async (effect) => {
-      await producer.enqueue(market);
-    });
+    // stellarService.streamEffects(market.account, async (effect) => {
+    //   await producer.enqueue(market);
+    // });
   }
 }
 bootstrap();

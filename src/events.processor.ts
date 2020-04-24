@@ -75,6 +75,7 @@ export class EventsProcessor {
             }),
           ], {
             source: account,
+            sequence: acc.sequenceNumber(),
           });
         } catch (err) {
           // console.error(err);

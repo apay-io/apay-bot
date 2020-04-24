@@ -39,12 +39,15 @@ export class Producer {
       this.limit[market.asset.asset_code] = false;
     }
     this.lastJob[market.asset.asset_code] = new Date().getTime();
-    return this.queue.add(market, {
+    await this.queue.add(market, {
       removeOnComplete: true,
       removeOnFail: true,
       backoff: 20000,
       attempts: 5,
       delay,
     });
+    setTimeout(() => {
+      this.enqueue(market);
+    }, 60000 + Math.random() * 540000);
   }
 }
