@@ -3,11 +3,28 @@ kind: Service
 metadata:
   name: apay-bot-svc
 spec:
-  type: LoadBalancer  
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3000
   selector:
     app: apay-bot
-  ports:
-    - name: http
-      protocol: TCP
-      port: 80
-      targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: apay-bot-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  tls:
+    - hosts:
+        - bot.apay.io
+      secretName: apay-certs
+  rules:
+    - host: bot.apay.io
+      http:
+        paths:
+          - backend:
+              serviceName: apay-bot-svc
+              servicePort: 80

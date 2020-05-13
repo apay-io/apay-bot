@@ -1,13 +1,13 @@
-import { BadRequestException, Body, Controller, Get, InternalServerErrorException, Logger, NotFoundException, Param, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, InternalServerErrorException, Logger, NotFoundException, Post, Query } from '@nestjs/common';
 import { AppService } from './app.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from './account.entity';
 import { Repository } from 'typeorm';
 import { StellarService } from './stellar.service';
 import { ConfigService } from '@nestjs/config';
-import {find, isEqual, map } from 'lodash';
+import { find, isEqual, map } from 'lodash';
 import { BigNumber } from 'bignumber.js';
-import { Operation, Asset } from 'stellar-sdk';
+import { Asset, Operation } from 'stellar-sdk';
 import { Tx } from './tx.entity';
 import { Charge } from './charge.entity';
 
@@ -229,8 +229,14 @@ export class AppController {
     const issued = !totalIssued.sum || new BigNumber(totalIssued.sum).isZero() ? 1 : totalIssued.sum;
     const unitPriceBase = new BigNumber(baseBalance.balance).dividedBy(issued);
     const unitPriceAsset = new BigNumber(assetBalance.balance).dividedBy(issued);
-    return {unitPriceBase, unitPriceAsset};
+    return {unitPriceBase, unitPriceAsset, issued};
   }
 
-
+  @Get('/stats')
+  stats() {
+    return this.chargeRepo.createQueryBuilder()
+      .select('asset, SUM("baseAmount") as "baseTotal", SUM("assetAmount") as "assetTotal", SUM(tokens) as "tokensTotal"')
+      .groupBy('asset')
+      .getRawMany();
+  }
 }

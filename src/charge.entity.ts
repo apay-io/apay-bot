@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, Generated, ManyToOne, Unique, ManyToMany, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, Generated, ManyToOne, Unique, ManyToMany, OneToMany, Index } from 'typeorm';
 import { Account } from './account.entity';
 import { BigNumber } from 'bignumber.js';
 import { BigNumberToStringTransformer } from './app.transformers';
@@ -13,6 +13,7 @@ export class Charge {
   @CreateDateColumn()
   createdAt?: Date;
 
+  @Index()
   @Column({
     length: 255,
     nullable: false,
