@@ -215,7 +215,7 @@ export class AppController {
   }
 
   private async calculateUnitPrices(market) {
-    const bot = await this.stellarService.loadAccount(market.account);
+    const bot = await this.stellarService.loadAccountCached(market.account);
     const baseBalance = find(bot.balances, market.base);
     const assetBalance = find(bot.balances, market.asset);
     this.logger.log(baseBalance, 'base balance');
@@ -233,10 +233,28 @@ export class AppController {
   }
 
   @Get('/stats')
-  stats() {
-    return this.chargeRepo.createQueryBuilder()
+  async stats(@Query('account') account: string) {
+    const contributions = await this.chargeRepo.createQueryBuilder()
+      .where('1=1 OR "accountId" = :account', {account})
       .select('asset, SUM("baseAmount") as "baseTotal", SUM("assetAmount") as "assetTotal", SUM(tokens) as "tokensTotal"')
+      .addSelect('sum(case when "accountId" = :account then "assetAmount" else 0 end)', 'accountAsset')
+      .addSelect('sum(case when "accountId" = :account then "baseAmount" else 0 end)', 'accountBase')
+      .addSelect('sum(case when "accountId" = :account then "tokens" else 0 end)', 'accountTokens')
       .groupBy('asset')
       .getRawMany();
+
+    const result = [];
+    for (const item of contributions) {
+      const market = find(this.configService.get('markets'), v => v.asset.asset_code === item.asset
+        || item.asset === 'XLM' && v.asset.asset_type === 'native');
+      const { unitPriceBase, unitPriceAsset, issued } = await this.calculateUnitPrices(market);
+      result.push({
+        ...item,
+        unitPriceBase,
+        unitPriceAsset,
+        issued,
+      });
+    }
+    return result;
   }
 }

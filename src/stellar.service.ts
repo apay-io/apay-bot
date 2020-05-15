@@ -8,6 +8,7 @@ export class StellarService {
   private readonly logger = new Logger(StellarService.name);
   private server;
   private networkPassphrase: string;
+  private accounts = {};
 
   constructor(
     private readonly configService: ConfigService,
@@ -50,8 +51,17 @@ export class StellarService {
     return assetObj.asset_type === 'native' ? Asset.native() : new Asset(assetObj.asset_code, assetObj.asset_issuer);
   }
 
-  loadAccount(account: string) {
-    return this.server.loadAccount(account);
+  async loadAccount(account: string) {
+    const accountRecord = await this.server.loadAccount(account);
+    this.accounts[account] = accountRecord;
+    return accountRecord;
+  }
+
+  async loadAccountCached(account: string) {
+    if (!this.accounts[account]) {
+      this.accounts[account] = await this.loadAccount(account);
+    }
+    return this.accounts[account];
   }
 
   async loadOffers(account: string) {
