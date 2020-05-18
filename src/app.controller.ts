@@ -93,8 +93,8 @@ export class AppController {
     this.logger.log(unitsOfAsset, 'units of asset');
     const minUnits = new BigNumber(unitsOfBase).lt(unitsOfAsset) ? unitsOfBase : unitsOfAsset;
 
-    const depositBase = unitPriceBase.multipliedBy(minUnits).toFixed(7);
-    const depositAsset = unitPriceAsset.multipliedBy(minUnits).toFixed(7);
+    const depositBase = minUnits === unitsOfBase ? baseSum.toFixed(7) : unitPriceBase.multipliedBy(minUnits).toFixed(7);
+    const depositAsset = minUnits === unitsOfAsset ? assetSum.toFixed(7) : unitPriceAsset.multipliedBy(minUnits).toFixed(7);
     this.logger.log(depositBase, 'deposit base');
     this.logger.log(depositAsset, 'deposit asset');
 
