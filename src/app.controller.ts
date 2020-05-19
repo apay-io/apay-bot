@@ -202,7 +202,7 @@ export class AppController {
         source: market.account,
       }),
       Operation.payment({
-        destination: market.account,
+        destination: account.account,
         asset: this.stellarService.assetFromObject(market.asset),
         amount:  charge.assetAmount.negated().toFixed(7),
         source: market.account,
