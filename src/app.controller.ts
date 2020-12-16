@@ -85,7 +85,7 @@ export class AppController {
     if (baseSum.isZero() || assetSum.isZero()) {
       throw new BadRequestException('Insufficient txs');
     }
-    const {unitPriceBase, unitPriceAsset} = await this.calculateUnitPrices(market);
+    const {unitPriceBase, unitPriceAsset} = await this.calculateUnitPrices(market, true);
 
     const unitsOfBase = baseSum.dividedBy(unitPriceBase).toFixed(7);
     const unitsOfAsset = assetSum.dividedBy(unitPriceAsset).toFixed(7);
@@ -180,9 +180,15 @@ export class AppController {
       throw new BadRequestException('No trustline');
     }
 
-    const {unitPriceBase, unitPriceAsset} = await this.calculateUnitPrices(market);
+    const {unitPriceBase, unitPriceAsset} = await this.calculateUnitPrices(market, true);
     const { channel, sequence } = await this.stellarService.assignChannelAndSequence(market.manager);
 
+    const saved = await this.txRepo.save({
+      manager: market.manager,
+      currencyIn: op.asset_code || 'XLM',
+      amountIn: new BigNumber(op.amount),
+      txIn: op.id,
+    });
     const charge = await this.chargeRepo.save({
       account,
       asset: market.asset.asset_code || 'XLM',
@@ -192,6 +198,7 @@ export class AppController {
       manager: market.manager,
       channel,
       sequence,
+      txs: [saved],
     } as Charge);
 
     await this.stellarService.buildAndSubmitTx([
@@ -204,7 +211,7 @@ export class AppController {
       Operation.payment({
         destination: account.account,
         asset: this.stellarService.assetFromObject(market.asset),
-        amount:  charge.assetAmount.negated().toFixed(7),
+        amount: charge.assetAmount.negated().toFixed(7),
         source: market.account,
       }),
     ], {
@@ -214,8 +221,10 @@ export class AppController {
     });
   }
 
-  private async calculateUnitPrices(market) {
-    const bot = await this.stellarService.loadAccountCached(market.account);
+  private async calculateUnitPrices(market, nocache = false) {
+    const bot = nocache
+      ? await this.stellarService.loadAccount(market.account)
+      : await this.stellarService.loadAccountCached(market.account);
     const baseBalance = find(bot.balances, market.base);
     const assetBalance = find(bot.balances, market.asset);
     this.logger.log(baseBalance, 'base balance');
@@ -247,13 +256,15 @@ export class AppController {
     for (const item of contributions) {
       const market = find(this.configService.get('markets'), v => v.asset.asset_code === item.asset
         || item.asset === 'XLM' && v.asset.asset_type === 'native');
-      const { unitPriceBase, unitPriceAsset, issued } = await this.calculateUnitPrices(market);
-      result.push({
-        ...item,
-        unitPriceBase,
-        unitPriceAsset,
-        issued,
-      });
+      if (market) {
+        const {unitPriceBase, unitPriceAsset, issued} = await this.calculateUnitPrices(market);
+        result.push({
+          ...item,
+          unitPriceBase,
+          unitPriceAsset,
+          issued,
+        });
+      }
     }
     return result;
   }

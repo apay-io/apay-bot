@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Asset, Server, Keypair, Operation, TransactionBuilder, Account, Memo, xdr } from 'stellar-sdk';
+import { Asset, Server, Keypair, Operation, TransactionBuilder, Account, Memo, xdr, ServerApi } from 'stellar-sdk';
 import {ConfigService} from '@nestjs/config';
 import { AssetInterface } from './asset.interface';
+import PaymentOperationRecord = ServerApi.PaymentOperationRecord;
 
 @Injectable()
 export class StellarService {
@@ -99,7 +100,7 @@ export class StellarService {
     });
   }
 
-  async getTx(txId: string) {
+  async getTx(txId: string): Promise<PaymentOperationRecord> {
     return this.server
       .operations()
       .join('transactions')
@@ -110,7 +111,7 @@ export class StellarService {
   async assignChannelAndSequence(manager) {
     return {
       channel: manager,
-      sequence: await this.server.loadAccount(manager).sequence,
+      sequence: (await this.server.loadAccount(manager)).sequence,
     };
   }
 
