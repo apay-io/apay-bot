@@ -24,7 +24,7 @@
     "@nestjs/common": "^6.7.2",
     "@nestjs/config": "latest",
     "@nestjs/core": "^6.7.2",
-    "@nestjs/platform-express": "^6.7.2",
+    "@nestjs/platform-express": "^9.2.1",
     "@nestjs/typeorm": "latest",
     "bignumber.js": "latest",
     "bull": "^3.13.0",
